@@ -1,2 +1,2 @@
-# learnedUpdateRule_SBL
-Learning a superior iterative update rule for SBL via data. 
+# A Structured Neural Network Approach for Learning Improved Iterative Algorithms for SBL
+
