@@ -44,18 +44,6 @@ def weighted_cross_entropy(output,target):
 
     return loss   
 
-def SubspaceDist(outputs, targets, source_numbers,weights):
-
-    rank = source_numbers.int().item()
-    _, AQ = torch.linalg.eigh(outputs)
-    _, BQ = torch.linalg.eigh(targets)
-    A = AQ[:,:,-rank:]
-    B = BQ[:,:,-rank:]
-    _, S, _= torch.linalg.svd(A.conj().transpose(-2,-1) @ B)
-    theta = torch.acos(torch.clamp(S,max=1-1e-3))
-    #weighted_loss = torch.matmul(weights , torch.sqrt(torch.sum(theta[:,:,:rank] ** 2, dim=2))).squeeze()
-    return torch.sqrt(torch.sum(theta[:,:rank] ** 2))#weighted_loss
-
 
 
     

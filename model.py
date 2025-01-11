@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from scipy.io import savemat
+
     
 def blockCompute_T1_T2(gamma,input,var_noise,device,m_type):
     
@@ -198,35 +198,6 @@ class modelGamma(nn.Module):
     def get_device(self):
         return next(self.parameters()).device.type
 
-class MultiplcativeUpdate_perLayer(nn.Module):
-
-    def __init__(self,n_iter,n_gridpoints,var_noise) -> None:
-        super(MultiplcativeUpdate_perLayer,self).__init__()
-    
-        self.p = nn.Parameter(2*torch.rand(n_iter),requires_grad=True)
-        self.n_iter=n_iter
-        self.n_gridpoints=n_gridpoints
-        self.var_noise = var_noise
-    
-    def forward(self,x):
-        n_batch=x.shape[0]
-        self.device = self.get_device
-        gamma=torch.ones(n_batch,self.n_gridpoints).float().to(self.device)
-        #p_constraint=(F.relu(self.p) - F.relu(self.p-1.999))/2
-        p_constraint = self.p
-        for i in range(self.n_iter):
-            T_1,T_2 = blockCompute_T1_T2(gamma,x,self.var_noise,self.device)
-            gamma = torch.mul(torch.div(T_1,T_2) ** p_constraint[i] , gamma)
-            #gamma = torch.log(gamma)+ p_constraint[i]*(torch.log(T_1)-torch.log(T_2))
-        return gamma
-    
-    def pReLu(self,x):
-        return (F.relu(x) - F.relu(x-1.999))/2
-    
-    @property
-    def get_device(self):
-        return next(self.parameters()).device.type
-    
 
 
 
@@ -257,16 +228,6 @@ def BasicIter_10_Layers_2_N_8_sameGamma(n_gridpoints,var_noise):
 
 
 
-
-# Learning multiplicative update
-def learn_p_30(n_gridpoints,var_noise):
-    return MultiplcativeUpdate_perLayer(n_iter=30,n_gridpoints=n_gridpoints,var_noise=var_noise)
-def learn_p_50(n_gridpoints,var_noise):
-    return MultiplcativeUpdate_perLayer(n_iter=50,n_gridpoints=n_gridpoints,var_noise=var_noise)
-def learn_p_60(n_gridpoints,var_noise):
-    return MultiplcativeUpdate_perLayer(n_iter=60,n_gridpoints=n_gridpoints,var_noise=var_noise)
-def learn_p_180(n_gridpoints,var_noise):
-    return MultiplcativeUpdate_perLayer(n_iter=180,n_gridpoints=n_gridpoints,var_noise=var_noise)
 
 
 

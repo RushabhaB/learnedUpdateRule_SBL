@@ -27,10 +27,10 @@ def sweep_layer(n_layers,n_neurons,n_iter,mu,max_epochs,skip):
     n_deg_sep=1
     n_snapshots= [1,2,3,5,7,10]
     n_gridpoints = int((end_angle-start_angle)/n_deg_sep)
-    train_N_datapoints=len(sparsity)*160000 // len(n_snapshots)
+    train_N_datapoints=len(sparsity)*160000 // len(n_snapshots) # Number of points for every snapshot length
     valid_N_datapoints = len(sparsity)*3000
     seed=2220
-    m_flag = 0
+    m_flag = 0 # Controls the type of matrix to train the model on 
     if(m_flag == 0):
         mm_type = {
                 "type": "arrayMatrix",
@@ -54,7 +54,7 @@ def sweep_layer(n_layers,n_neurons,n_iter,mu,max_epochs,skip):
         "n_gridpoints": n_gridpoints
         }
     
-    subspace_flag = False
+
     mmv_mixed_flag = True
     if mmv_mixed_flag:
         traindataset = []

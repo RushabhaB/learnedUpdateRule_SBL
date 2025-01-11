@@ -176,7 +176,6 @@ class TrainRegressor:
         self.ckpt_path = self.checkpoint_folder+self.name+'/'+self.ckpt_filename
 
         if self.fineTune:
-            #self.fine_tune_model_name = "./checkpoint/comp2/best_models/BasicIter_Layers_func_no_bn_sameGamma_Layers_5_Iter_15_N_64_skip_True_mixed_loss_array_n30"
             self.fine_tune_model_name = "./checkpoint/sweep_layer_softmax/BasicIter_Layers_func_no_bn_sameGamma_Layers_5_Iter_15_N_32_skip_True_mixed_loss_array_n30_60dB_correct_var_2_layer"
             self.fine_tune_model_name = self.fine_tune_model_name + "/best_model.pt"
             self.fine_tune_linear_model_name = self.fine_tune_model_name + "_linear"
@@ -275,12 +274,7 @@ class TrainRegressor:
             }
         self.__check_folder()
 
-        # Saving ML Flow parameters
-        #if(epoch >0):
-        #    mlflow.pytorch.log_model(self.net,self.name)
-        #    mlflow.pytorch.log_state_dict(self.net.state_dict(),artifact_path=mlflow.get_artifact_uri())
-
-
+        
         torch.save(state, self.ckpt_path)
         print('{} checkpoint saved at {}'.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),self.ckpt_path))
         del state['net'], state['optimizer'], state['scheduler']
@@ -365,8 +359,7 @@ class TrainRegressor:
         num_batch = len(self.trainloader)
         for batch_idx, (inputs, targets) in enumerate(self.trainloader,1):
             inputs, targets = inputs, [targets[0].to(self.device),targets[1].to(self.device)]
-            #inputs = inputs / torch.linalg.vector_norm(inputs,dim=1).unsqueeze(1)
-
+           
             if self.linear_flag:
                 targets_supp = targets[0]
                 targets_mag = targets[1]
@@ -399,11 +392,6 @@ class TrainRegressor:
                 if self.linear_flag:
                     lin_out = self.linear(gamma_all)
                     loss = self.criterion(lin_out,targets_supp) + complex_mse_layer_sum(post_mean_vec,targets_mag,self.weights,targets_mag.shape[2])
-                        #+ log_det_loss(inputs,self.var_noise,gamma_all,targets,self.weights,self.m_type)
-                #elif self.tp.subspace_flag:
-                #    cov_pred,cov_target = getCovMatrix(gamma_all[-2:-1],inputs,targets_supp,self.var_noise,self.m_type,self.device)
-                #    loss = self.criterion(cov_pred[0],cov_target,torch.sum(targets_supp[0]),self.weights) \
-                #        + complex_mse_layer_sum(post_mean_vec,targets_mag,self.weights,self.n_L)
                 else:
                     loss = self.criterion(post_mean_vec,targets)
 
@@ -414,8 +402,6 @@ class TrainRegressor:
                 return float("nan")
 
             self.scaler.scale(batch_mean_loss).backward()
-            
-            #gradflow_check.plot_grad_flow_v2(self.net.named_parameters())
             self.scaler.step(self.optimizer)
             self.scaler.update()
 
